@@ -28,8 +28,8 @@ class OlistAnalysis:
         sns.set_style("whitegrid")
         
         # 1. Top 10 Product Categories
-        if "query_01_top_product_categories" in self.results:
-            df = self.results["query_01_top_product_categories"]
+        if "query_01" in self.results:
+            df = self.results["query_01"]
             plt.figure(figsize=(12, 6))
             plt.barh(df['product_category_name_english'], df['order_count'])
             plt.xlabel('Order Count')
@@ -40,8 +40,8 @@ class OlistAnalysis:
             print("[CHART] Top 10 Product Categories")
         
         # 2. Orders by Month
-        if "query_05_orders_by_month" in self.results:
-            df = self.results["query_05_orders_by_month"]
+        if "query_05" in self.results:
+            df = self.results["query_05"]
             plt.figure(figsize=(14, 6))
             plt.plot(df['month'], df['order_count'], marker='o', linewidth=2)
             plt.xlabel('Month')
@@ -54,8 +54,8 @@ class OlistAnalysis:
             print("[CHART] Orders by Month")
         
         # 3. Revenue by State
-        if "query_04_revenue_by_state" in self.results:
-            df = self.results["query_04_revenue_by_state"].head(10)
+        if "query_04" in self.results:
+            df = self.results["query_04"].head(10)
             plt.figure(figsize=(12, 6))
             plt.bar(df['customer_state'], df['total_revenue'])
             plt.xlabel('State')
@@ -68,8 +68,8 @@ class OlistAnalysis:
             print("[CHART] Revenue by State")
         
         # 4. Review Score Over Time
-        if "query_17_review_score_over_time" in self.results:
-            df = self.results["query_17_review_score_over_time"]
+        if "query_17" in self.results:
+            df = self.results["query_17"]
             plt.figure(figsize=(14, 6))
             plt.plot(df['month'], df['avg_review_score'], marker='o', linewidth=2, color='green')
             plt.xlabel('Month')
@@ -83,8 +83,8 @@ class OlistAnalysis:
             print("[CHART] Review Score Over Time")
         
         # 5. Payment Type Distribution
-        if "query_09_avg_order_value_by_payment" in self.results:
-            df = self.results["query_09_avg_order_value_by_payment"]
+        if "query_09" in self.results:
+            df = self.results["query_09"]
             plt.figure(figsize=(10, 6))
             plt.pie(df['total_payments'], labels=df['payment_type'], autopct='%1.1f%%')
             plt.title('Order Distribution by Payment Type')
