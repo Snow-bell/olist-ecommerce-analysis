@@ -1,50 +1,26 @@
 import os
-from dotenv import load_dotenv
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# Load environment variables
-load_dotenv()
-
-# Supabase connection details
-DB_URL = os.getenv("DATABASE_URL")
-
 class OlistAnalysis:
     def __init__(self):
-        self.conn = None
         self.results = {}
-        
-    def connect(self):
-        """Connect to Supabase PostgreSQL database"""
-        try:
-            self.conn = psycopg2.connect(DB_URL)
-            print("[OK] Connected to Supabase")
-        except Exception as e:
-            print(f"[ERROR] Connection failed: {e}")
-            raise
     
-    def run_query(self, query_name, sql):
-        """Execute a query and return results as DataFrame"""
-        try:
-            df = pd.read_sql(sql, self.conn)
-            self.results[query_name] = df
-            print(f"[OK] {query_name}: {len(df)} rows")
-            return df
-        except Exception as e:
-            print(f"[ERROR] {query_name} failed: {e}")
-            return None
-    
-    def save_results_to_csv(self):
-        """Save all query results to CSV files"""
-        os.makedirs("results/queries", exist_ok=True)
-        for query_name, df in self.results.items():
-            filepath = f"results/queries/{query_name}.csv"
-            df.to_csv(filepath, index=False)
-            print(f"[SAVED] {filepath}")
+    def load_results_from_csv(self):
+        """Load pre-exported query results from CSV files"""
+        query_dir = "results/queries"
+        for filename in os.listdir(query_dir):
+            if filename.endswith(".csv"):
+                query_name = filename.replace(".csv", "")
+                filepath = f"{query_dir}/{filename}"
+                try:
+                    df = pd.read_csv(filepath)
+                    self.results[query_name] = df
+                    print(f"[OK] Loaded: {query_name}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to load {filename}: {e}")
     
     def create_visualizations(self):
         """Generate key matplotlib charts"""
@@ -171,53 +147,17 @@ All 20 analytical queries and their results are available in results/queries/ di
         with open("ANALYSIS_REPORT.md", "w") as f:
             f.write(report)
         print("[REPORT] ANALYSIS_REPORT.md")
-    
-    def run_all_queries(self):
-        """Define and run all 20 queries"""
-        queries = {
-            "query_01_top_product_categories": """
-                select t.product_category_name_english, COUNT(*) as order_count
-                from olist.order_items oi
-                join olist.products p on oi.product_id = p.product_id
-                join olist.product_category_name_translation t on p.product_category_name = t.product_category_name
-                group by t.product_category_name_english
-                order by order_count DESC
-                limit 10;
-            """,
-            "query_02_sellers_highest_review_score": """
-                select oi.seller_id, ROUND(AVG(r.review_score), 2) as avg_review_score, COUNT(*) as total_reviews
-                from olist.order_reviews r
-                join olist.order_items oi on r.order_id = oi.order_id
-                group by oi.seller_id
-                having COUNT(*) >= 10
-                order by avg_review_score DESC
-                limit 20;
-            """,
-        }
-        
-        for query_name, sql in queries.items():
-            self.run_query(query_name, sql)
-    
-    def disconnect(self):
-        """Close database connection"""
-        if self.conn:
-            self.conn.close()
-            print("[OK] Disconnected from Supabase")
 
 def main():
     analysis = OlistAnalysis()
     
     try:
-        analysis.connect()
-        analysis.run_all_queries()
-        analysis.save_results_to_csv()
+        analysis.load_results_from_csv()
         analysis.create_visualizations()
         analysis.generate_report()
         print("\n[COMPLETE] Analysis finished successfully")
     except Exception as e:
         print(f"\n[ERROR] {e}")
-    finally:
-        analysis.disconnect()
 
 if __name__ == "__main__":
     main()
